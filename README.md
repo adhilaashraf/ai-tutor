@@ -113,7 +113,11 @@ ai-tutor/
 ├── .gitignore              # Keeps API key safe
 └── README.md
 ```
-
+## 📸 Screenshots
+![Setup Screen](assets/setupscreen.jpeg)
+![Learn Screen](assets/learnscreen.jpeg)
+![Quiz Screen](assets/quizscreen.jepg)
+![Results Screen](assets/resultscreen.jpeg)
 ---
 
 ## 🛠️ Tech Stack
