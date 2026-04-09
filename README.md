@@ -118,6 +118,8 @@ ai-tutor/
 ![Learn Screen](assets/learnscreen.jpeg)
 ![Quiz Screen](assets/quizscreen.jepg)
 ![Results Screen](assets/resultscreen.jpeg)
+
+All the screenshots are available in Assets folder
 ---
 
 ## 🛠️ Tech Stack
