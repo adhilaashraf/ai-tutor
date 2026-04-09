@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI Tutor — Learn Smarter</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --card: #1a1a24;
+    --border: #2a2a38;
+    --accent: #7c6af7;
+    --accent2: #f7a26a;
+    --green: #4ade80;
+    --red: #f87171;
+    --yellow: #fbbf24;
+    --text: #e8e8f0;
+    --muted: #7070a0;
+    --radius: 16px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    background-image: radial-gradient(ellipse at 20% 0%, rgba(124,106,247,0.12) 0%, transparent 60%),
+                      radial-gradient(ellipse at 80% 100%, rgba(247,162,106,0.08) 0%, transparent 60%);
+  }
+
+  /* ── Header ── */
+  header {
+    padding: 28px 40px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+  header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px; font-weight: 800;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  header span { color: var(--muted); font-size: 13px; margin-left: auto; }
+
+  /* ── Layout ── */
+  .container { max-width: 820px; margin: 0 auto; padding: 48px 24px 80px; }
+
+  /* ── Step indicator ── */
+  .steps {
+    display: flex; gap: 0; margin-bottom: 48px;
+    background: var(--surface); border-radius: 50px;
+    padding: 6px; border: 1px solid var(--border);
+  }
+  .step {
+    flex: 1; text-align: center; padding: 10px 8px;
+    border-radius: 50px; font-size: 12px; font-weight: 500;
+    color: var(--muted); transition: all 0.3s ease; cursor: default;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .step.active {
+    background: linear-gradient(135deg, var(--accent), #5a4fd8);
+    color: white; font-weight: 600;
+  }
+  .step.done { color: var(--green); }
+  .step-num {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--border); font-size: 11px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .step.active .step-num { background: rgba(255,255,255,0.2); }
+  .step.done .step-num { background: var(--green); color: #0a0a0f; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 32px;
+    margin-bottom: 24px;
+    animation: slideUp 0.4s ease;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .card-title {
+    font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700;
+    margin-bottom: 24px; display: flex; align-items: center; gap: 10px;
+  }
+  .card-title .icon { font-size: 22px; }
+
+  /* ── Form Elements ── */
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 8px; }
+  label { font-size: 12px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+  select, input[type="text"] {
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); padding: 12px 16px; border-radius: 10px;
+    font-family: 'DM Sans', sans-serif; font-size: 14px;
+    outline: none; transition: border-color 0.2s;
+    appearance: none; width: 100%;
+  }
+  select:focus, input[type="text"]:focus { border-color: var(--accent); }
+
+  /* ── Difficulty Slider ── */
+  .difficulty-wrap { margin-bottom: 24px; }
+  .difficulty-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 6px; }
+  input[type="range"] {
+    width: 100%; -webkit-appearance: none; height: 4px;
+    background: linear-gradient(90deg, var(--accent) 0%, var(--accent2) 100%);
+    border-radius: 4px; outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 20px; height: 20px;
+    background: white; border-radius: 50%; cursor: pointer;
+    box-shadow: 0 0 0 3px var(--accent);
+  }
+  .diff-badge {
+    display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    background: var(--surface); border: 1px solid var(--border); margin-left: 10px;
+  }
+
+  /* ── Buttons ── */
+  .btn {
+    padding: 14px 28px; border-radius: 10px; border: none;
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px;
+    cursor: pointer; transition: all 0.2s; display: inline-flex;
+    align-items: center; gap: 8px;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), #5a4fd8);
+    color: white; box-shadow: 0 4px 20px rgba(124,106,247,0.3);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(124,106,247,0.4); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-secondary {
+    background: var(--surface); color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+  /* ── Explanation box ── */
+  .explanation-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-left: 3px solid var(--accent); border-radius: 10px;
+    padding: 20px; line-height: 1.75; font-size: 15px; color: var(--text);
+    margin-bottom: 24px;
+  }
+
+  /* ── Questions ── */
+  .question-item { margin-bottom: 20px; }
+  .question-label {
+    font-size: 14px; font-weight: 500; margin-bottom: 10px;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .q-num {
+    min-width: 26px; height: 26px; background: var(--accent);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: white; margin-top: 1px;
+  }
+  textarea {
+    width: 100%; background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); padding: 12px 16px; border-radius: 10px;
+    font-family: 'DM Sans', sans-serif; font-size: 14px; resize: vertical;
+    min-height: 70px; outline: none; transition: border-color 0.2s; line-height: 1.5;
+  }
+  textarea:focus { border-color: var(--accent); }
+
+  /* ── Results ── */
+  .score-hero {
+    text-align: center; padding: 32px 0 24px;
+    border-bottom: 1px solid var(--border); margin-bottom: 24px;
+  }
+  .score-circle {
+    width: 100px; height: 100px; border-radius: 50%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    margin: 0 auto 16px;
+    background: conic-gradient(var(--accent) var(--pct, 0%), var(--surface) 0%);
+    position: relative;
+  }
+  .score-circle::before {
+    content: ''; position: absolute; width: 78px; height: 78px;
+    background: var(--card); border-radius: 50%;
+  }
+  .score-text { position: relative; z-index: 1; font-family: 'Syne',sans-serif; }
+  .score-num { font-size: 26px; font-weight: 800; line-height: 1; }
+  .score-denom { font-size: 12px; color: var(--muted); }
+  .grade-badge {
+    display: inline-block; padding: 6px 18px; border-radius: 50px;
+    font-family: 'Syne',sans-serif; font-weight: 700; font-size: 14px;
+  }
+  .grade-A { background: rgba(74,222,128,0.15); color: var(--green); border: 1px solid rgba(74,222,128,0.3); }
+  .grade-B { background: rgba(251,191,36,0.15); color: var(--yellow); border: 1px solid rgba(251,191,36,0.3); }
+  .grade-C { background: rgba(248,113,113,0.15); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
+
+  .q-result {
+    padding: 16px; border-radius: 10px; margin-bottom: 12px;
+    border: 1px solid var(--border);
+  }
+  .q-result.correct { border-left: 3px solid var(--green); background: rgba(74,222,128,0.05); }
+  .q-result.partially { border-left: 3px solid var(--yellow); background: rgba(251,191,36,0.05); }
+  .q-result.incorrect { border-left: 3px solid var(--red); background: rgba(248,113,113,0.05); }
+
+  .q-result-header { display: flex; justify-content: space-between; margin-bottom: 8px; align-items: center; }
+  .q-result-title { font-size: 13px; font-weight: 600; color: var(--muted); }
+  .status-chip {
+    font-size: 11px; padding: 2px 10px; border-radius: 20px; font-weight: 600; text-transform: uppercase;
+  }
+  .chip-correct { background: rgba(74,222,128,0.15); color: var(--green); }
+  .chip-partial { background: rgba(251,191,36,0.15); color: var(--yellow); }
+  .chip-incorrect { background: rgba(248,113,113,0.15); color: var(--red); }
+  .q-result-comment { font-size: 13px; color: var(--text); line-height: 1.6; }
+
+  .feedback-box {
+    background: linear-gradient(135deg, rgba(124,106,247,0.1), rgba(247,162,106,0.07));
+    border: 1px solid var(--accent); border-radius: 12px; padding: 20px; margin-top: 16px;
+  }
+  .feedback-box p { font-size: 14px; line-height: 1.7; color: var(--text); }
+  .tip-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px; margin-top: 12px;
+    font-size: 13px; color: var(--muted); display: flex; gap: 10px; align-items: flex-start;
+  }
+
+  /* ── Loader ── */
+  .loader { display: none; align-items: center; gap: 12px; color: var(--muted); font-size: 14px; margin: 8px 0; }
+  .loader.show { display: flex; }
+  .spinner {
+    width: 18px; height: 18px; border: 2px solid var(--border);
+    border-top-color: var(--accent); border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; bottom: 28px; right: 28px; padding: 12px 20px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; font-size: 13px; color: var(--text);
+    opacity: 0; transform: translateY(10px); pointer-events: none;
+    transition: all 0.3s; z-index: 999;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ── Section visibility ── */
+  .section { display: none; }
+  .section.visible { display: block; }
+
+  /* ── Responsive ── */
+  @media (max-width: 540px) {
+    header { padding: 20px; }
+    .container { padding: 24px 16px 60px; }
+    .card { padding: 20px; }
+    .form-row { grid-template-columns: 1fr; }
+    .steps { gap: 4px; }
+    .step { font-size: 10px; padding: 8px 4px; }
+    .step-num { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-icon">🧠</div>
+  <h1>AI Tutor</h1>
+  <span>Powered by Gemini</span>
+</header>
+
+<div class="container">
+
+  <!-- Step Indicator -->
+  <div class="steps">
+    <div class="step active" id="step1"><div class="step-num">1</div> Setup</div>
+    <div class="step" id="step2"><div class="step-num">2</div> Learn</div>
+    <div class="step" id="step3"><div class="step-num">3</div> Quiz</div>
+    <div class="step" id="step4"><div class="step-num">4</div> Results</div>
+  </div>
+
+  <!-- SECTION 1: Setup -->
+  <div class="section visible" id="sec-setup">
+    <div class="card">
+      <div class="card-title"><span class="icon">📚</span> What do you want to learn?</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Class</label>
+          <select id="class_level">
+            <option value="5th">5th Grade</option>
+            <option value="8th" selected>8th Grade</option>
+            <option value="10th">10th Grade</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Subject</label>
+          <select id="subject">
+            <option value="Math">Math</option>
+            <option value="Science">Science</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:24px">
+        <label>Topic</label>
+        <input type="text" id="topic" placeholder="e.g. Fractions, Photosynthesis, Algebra..." />
+      </div>
+
+      <div class="difficulty-wrap">
+        <label style="font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">
+          Difficulty
+          <span class="diff-badge" id="diff-label">Medium</span>
+        </label>
+        <input type="range" min="1" max="3" value="2" id="difficulty" style="margin-top:12px" />
+        <div class="difficulty-labels">
+          <span>🌱 Easy</span>
+          <span>⚡ Medium</span>
+          <span>🔥 Hard</span>
+        </div>
+      </div>
+
+      <div class="loader" id="loader-explain">
+        <div class="spinner"></div> Generating explanation...
+      </div>
+      <button class="btn btn-primary" id="btn-explain" onclick="startExplain()">
+        ✨ Generate Explanation
+      </button>
+    </div>
+  </div>
+
+  <!-- SECTION 2: Explanation -->
+  <div class="section" id="sec-explain">
+    <div class="card">
+      <div class="card-title"><span class="icon">💡</span> Here's your explanation</div>
+      <div class="explanation-box" id="explanation-text"></div>
+      <div class="loader" id="loader-questions">
+        <div class="spinner"></div> Generating questions...
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <button class="btn btn-secondary" onclick="resetAll()">← Start Over</button>
+        <button class="btn btn-primary" id="btn-questions" onclick="loadQuestions()">
+          Take the Quiz →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: Quiz -->
+  <div class="section" id="sec-quiz">
+    <div class="card">
+      <div class="card-title"><span class="icon">📝</span> Answer these questions</div>
+      <div id="questions-container"></div>
+      <div class="loader" id="loader-eval">
+        <div class="spinner"></div> Evaluating your answers...
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <button class="btn btn-secondary" onclick="goBack()">← Re-read</button>
+        <button class="btn btn-primary" id="btn-submit" onclick="submitAnswers()">
+          Submit Answers →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 4: Results -->
+  <div class="section" id="sec-results">
+    <div class="card" id="results-card">
+      <!-- filled by JS -->
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:4px">
+      <button class="btn btn-secondary" onclick="resetAll()">🔄 Try Another Topic</button>
+      <button class="btn btn-primary" onclick="retryQuiz()">🔁 Retry This Topic</button>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let currentQuestions = [];
+  let storedExplanation = '';
+
+  // Difficulty label update
+  document.getElementById('difficulty').addEventListener('input', function() {
+    const labels = { '1': 'Easy 🌱', '2': 'Medium ⚡', '3': 'Hard 🔥' };
+    document.getElementById('diff-label').textContent = labels[this.value];
+  });
+
+  function showSection(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
+    document.getElementById(id).classList.add('visible');
+  }
+
+  function setStep(n) {
+    for (let i = 1; i <= 4; i++) {
+      const el = document.getElementById('step' + i);
+      el.classList.remove('active', 'done');
+      if (i < n) el.classList.add('done');
+      if (i === n) el.classList.add('active');
+    }
+  }
+
+  function showToast(msg, duration = 3000) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), duration);
+  }
+
+  async function startExplain() {
+    const topic = document.getElementById('topic').value.trim();
+    if (!topic) { showToast('⚠️ Please enter a topic first'); return; }
+
+    const btn = document.getElementById('btn-explain');
+    const loader = document.getElementById('loader-explain');
+    btn.disabled = true;
+    loader.classList.add('show');
+
+    try {
+      const res = await fetch('/explain', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          class_level: document.getElementById('class_level').value,
+          subject: document.getElementById('subject').value,
+          topic,
+          difficulty: document.getElementById('difficulty').value
+        })
+      });
+      const data = await res.json();
+      if (data.error) { showToast('❌ ' + data.error); return; }
+
+      storedExplanation = data.explanation;
+      document.getElementById('explanation-text').textContent = data.explanation;
+      showSection('sec-explain');
+      setStep(2);
+
+    } catch (e) {
+      showToast('❌ Network error. Check your API key.');
+    } finally {
+      btn.disabled = false;
+      loader.classList.remove('show');
+    }
+  }
+
+  async function loadQuestions() {
+    const btn = document.getElementById('btn-questions');
+    const loader = document.getElementById('loader-questions');
+    btn.disabled = true;
+    loader.classList.add('show');
+
+    try {
+      const res = await fetch('/questions', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+      const data = await res.json();
+      if (data.error) { showToast('❌ ' + data.error); return; }
+
+      currentQuestions = data.questions;
+      renderQuestions(currentQuestions);
+      showSection('sec-quiz');
+      setStep(3);
+
+    } catch (e) {
+      showToast('❌ Failed to load questions.');
+    } finally {
+      btn.disabled = false;
+      loader.classList.remove('show');
+    }
+  }
+
+  function renderQuestions(questions) {
+    const container = document.getElementById('questions-container');
+    container.innerHTML = questions.map((q, i) => `
+      <div class="question-item">
+        <div class="question-label">
+          <div class="q-num">${i + 1}</div>
+          <span>${q}</span>
+        </div>
+        <textarea id="ans-${i}" placeholder="Type your answer here..."></textarea>
+      </div>
+    `).join('');
+  }
+
+  async function submitAnswers() {
+    const answers = currentQuestions.map((_, i) => (document.getElementById('ans-' + i)?.value || '').trim());
+
+    const btn = document.getElementById('btn-submit');
+    const loader = document.getElementById('loader-eval');
+    btn.disabled = true;
+    loader.classList.add('show');
+
+    try {
+      const res = await fetch('/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ answers })
+      });
+      const data = await res.json();
+      if (data.error) { showToast('❌ ' + data.error); return; }
+
+      renderResults(data);
+      showSection('sec-results');
+      setStep(4);
+
+    } catch (e) {
+      showToast('❌ Evaluation failed.');
+    } finally {
+      btn.disabled = false;
+      loader.classList.remove('show');
+    }
+  }
+
+  function renderResults(data) {
+    const pct = data.percentage || 0;
+    const gradeClass = pct >= 70 ? 'grade-A' : pct >= 40 ? 'grade-B' : 'grade-C';
+    const perQ = (data.per_question || []).map(q => {
+      const statusClass = q.status === 'correct' ? 'correct' : q.status?.includes('partial') ? 'partially' : 'incorrect';
+      const chipClass = statusClass === 'correct' ? 'chip-correct' : statusClass === 'partially' ? 'chip-partial' : 'chip-incorrect';
+      const statusText = statusClass === 'correct' ? '✓ Correct' : statusClass === 'partially' ? '~ Partial' : '✗ Incorrect';
+      return `
+        <div class="q-result ${statusClass}">
+          <div class="q-result-header">
+            <span class="q-result-title">Question ${q.question_no}</span>
+            <span class="status-chip ${chipClass}">${statusText}</span>
+          </div>
+          <div class="q-result-comment">${q.comment}</div>
+        </div>`;
+    }).join('');
+
+    document.getElementById('results-card').innerHTML = `
+      <div class="card-title"><span class="icon">🎯</span> Your Results</div>
+      <div class="score-hero">
+        <div class="score-circle" style="--pct: ${pct * 3.6}deg">
+          <div class="score-text">
+            <div class="score-num">${data.score || '?'}</div>
+            <div class="score-denom">score</div>
+          </div>
+        </div>
+        <span class="grade-badge ${gradeClass}">${data.grade || ''}</span>
+      </div>
+      ${perQ}
+      <div class="feedback-box">
+        <p>💬 ${data.overall_feedback || ''}</p>
+      </div>
+      ${data.improvement_tip ? `<div class="tip-box">💡 <span><strong>Tip:</strong> ${data.improvement_tip}</span></div>` : ''}
+    `;
+  }
+
+  function resetAll() {
+    showSection('sec-setup');
+    setStep(1);
+    document.getElementById('topic').value = '';
+    currentQuestions = [];
+    storedExplanation = '';
+  }
+
+  function goBack() {
+    showSection('sec-explain');
+    setStep(2);
+  }
+
+  function retryQuiz() {
+    loadQuestions();
+  }
+</script>
+</body>
+</html>
