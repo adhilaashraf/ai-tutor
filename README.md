@@ -114,10 +114,10 @@ ai-tutor/
 └── README.md
 ```
 ## 📸 Screenshots
-![Setup Screen](assets/setupscreen.jpeg)
-![Learn Screen](assets/learnscreen.jpeg)
-![Quiz Screen](assets/quizscreen.jepg)
-![Results Screen](assets/resultscreen.jpeg)
+![Setup Screen](Assets/setupscreen.jpeg)
+![Learn Screen](Assets/learnscreen.jpeg)
+![Quiz Screen](Assets/quizscreen.jepg)
+![Results Screen](Assets/resultscreen.jpeg)
 
 All the screenshots are available in Assets folder
 ---
